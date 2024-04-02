@@ -127,35 +127,52 @@ server <- function(input, output, session){
   })
   
   # Barplots ----
+  
   updateSelectizeInput(session, "input.barplot.simple.tax", choices = taxonomy, server = TRUE)
+  updateSelectizeInput(session, "input.barplot.stacked.tax", choices = taxonomy, server = TRUE)
+  updateSelectizeInput(session, "input.barplot.horizontal.tax", choices = taxonomy, server = TRUE)
+  updateSelectizeInput(session, "input.barplot.compressed.tax", choices = taxonomy, server = TRUE)
   
   reactive.barplot.simple <- reactive({
     barplot.simple <- make_barplot(all_samples, classification = input$input.barplot.simple.tax)
     return(barplot.simple)
   })
   
-  updateSelectizeInput(session, "input.barplot.stacked.tax", choices = taxonomy, server = TRUE)
-  
   reactive.barplot.stacked <- reactive({
     barplot.stacked <- make_stacked_barplot(all_samples, classification = input$input.barplot.stacked.tax)
     return(barplot.stacked)
   })
-  
-  updateSelectizeInput(session, "input.barplot.horizontal.tax", choices = taxonomy, server = TRUE)
   
   reactive.barplot.horizontal <- reactive({
     barplot.horizontal <- make_horizontal_stacked_barplot(all_samples, classification = input$input.barplot.horizontal.tax)
     return(barplot.horizontal)
   })
   
-  updateSelectizeInput(session, "input.barplot.compressed.tax", choices = taxonomy, server = TRUE)
-  
   reactive.barplot.compressed <- reactive({
     barplot.compressed <- make_compressed_stacked_barplot(all_samples, classification = input$input.barplot.compressed.tax)
     return(barplot.compressed)
   })
   
+  # Heatmap ----
   
+  updateSelectizeInput(session, "input.heatmap.tax", choices = taxonomy, server = TRUE)
+  updateSelectizeInput(session, "input.heatmap.univar.tax", choices = taxonomy, server = TRUE)
+  updateSelectizeInput(session, "input.heatmap.multivar.tax", choices = taxonomy, server = TRUE)
+  
+  reactive.heatmap <- reactive({
+    heatmap <- make_heatmap(all_samples, classification = input$input.heatmap.tax)
+    return(heatmap)
+  })
+  
+  reactive.heatmap.univar <- reactive({
+    heatmap.univar <- make_univar_heatmap(all_samples, classification = input$input.heatmap.univar.tax)
+    return(heatmap.univar)
+  })
+  
+  reactive.heatmap.multivar <- reactive({
+    heatmap.multivar <- make_multivar_heatmap(all_samples, classification = input$input.heatmap.multivar.tax)
+    return(heatmap.multivar)
+  })
   
   # Density ----
   
@@ -277,6 +294,10 @@ server <- function(input, output, session){
   output$output.barplot.horizontal <- renderPlot({reactive.barplot.horizontal()})
   output$output.barplot.compressed <- renderPlot({reactive.barplot.compressed()})
   
+  output$output.heatmap <- renderPlot({reactive.heatmap()})
+  output$output.heatmap.univar <- renderPlot({reactive.heatmap.univar()})
+  output$output.heatmap.multivar <- renderPlot({reactive.heatmap.multivar()})
+  
   output$output.controls <- renderPlot({reactive.controls()})
   output$output.density <- renderPlot({reactive.density()})
   output$output.treemap <- renderPlot({reactive.treemap()})
@@ -287,6 +308,10 @@ server <- function(input, output, session){
   output$download.barplot.stacked <- download_manager(object = reactive.barplot.stacked(), device = "ggsave")
   output$download.barplot.horizontal <- download_manager(object = reactive.barplot.horizontal(), device = "ggsave")
   output$download.barplot.compressed <- download_manager(object = reactive.barplot.compressed(), device = "ggsave")
+  
+  output$download.heatmap <- download_manager(object = reactive.heatmap(), device = "ggsave")
+  output$download.heatmap.univar <- download_manager(object = reactive.heatmap.univar(), device = "ggsave")
+  output$download.heatmap.multivar <- download_manager(object = reactive.heatmap.multivar(), device = "ggsave")
   
   output$download.controls <- download_manager(object = reactive.controls(), device = "ggsave")
   output$download.density <- download_manager(object = reactive.density(), device = "ggsave")

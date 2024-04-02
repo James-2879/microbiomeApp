@@ -207,13 +207,52 @@ ui <- dashboardPage(skin = "black",
                                                                                     plotOutput(outputId = "output.density", width = "50%")
                                                                            ),
                                                                            tabPanel("Heatmap",
-                                                                                    tags$div(
-                                                                                      downloadBttn("download.heatmap",
-                                                                                                   "Download",
-                                                                                                   size = "xs",
-                                                                                      ),
-                                                                                      style = "padding-bottom:10px"
-                                                                                    ),
+                                                                                    fluidRow(style = "padding: 15px;", 
+                                                                                             column(width = 12,
+                                                                                                    style="padding:0px",
+                                                                                                    tabBox(width = 12,
+                                                                                                           tabPanel("Simple",
+                                                                                                                    tags$div(
+                                                                                                                      downloadBttn("download.heatmap",
+                                                                                                                                   "Download",
+                                                                                                                                   size = "xs",
+                                                                                                                      ),
+                                                                                                                      style = "padding-bottom:10px"
+                                                                                                                    ),
+                                                                                                                    selectizeInput(inputId = "input.heatmap.tax",
+                                                                                                                                   label = "Choose taxonomic level",
+                                                                                                                                   choices = NULL),
+                                                                                                                    plotOutput(outputId = "output.heatmap", width = "50%")
+                                                                                                           ),
+                                                                                                           tabPanel("Single var",
+                                                                                                                    tags$div(
+                                                                                                                      downloadBttn("download.heatmap.univar",
+                                                                                                                                   "Download",
+                                                                                                                                   size = "xs",
+                                                                                                                      ),
+                                                                                                                      style = "padding-bottom:10px"
+                                                                                                                    ),
+                                                                                                                    selectizeInput(inputId = "input.heatmap.univar.tax",
+                                                                                                                                   label = "Choose taxonomic level",
+                                                                                                                                   choices = NULL),
+                                                                                                                    plotOutput(outputId = "output.heatmap.univar", width = "50%")
+                                                                                                           ),
+                                                                                                           tabPanel("Multi var",
+                                                                                                                    tags$div(
+                                                                                                                      downloadBttn("download.heatmap.multivar",
+                                                                                                                                   "Download",
+                                                                                                                                   size = "xs",
+                                                                                                                      ),
+                                                                                                                      style = "padding-bottom:10px"
+                                                                                                                    ),
+                                                                                                                    selectizeInput(inputId = "input.heatmap.multivar.tax",
+                                                                                                                                   label = "Choose taxonomic level",
+                                                                                                                                   choices = NULL),
+                                                                                                                    plotOutput(outputId = "output.heatmap.multivar", width = "50%")
+                                                                                                           )
+                                                                                                    )
+                                                                                             )
+                                                                                    )
                                                                            ),
                                                                            tabPanel("Treemap",
                                                                                     tags$div(
