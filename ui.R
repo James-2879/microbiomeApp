@@ -135,14 +135,66 @@ ui <- dashboardPage(skin = "black",
                                                                                     plotOutput(outputId = "output.controls", width = "50%")
                                                                            ),
                                                                            tabPanel("Barplots",
-                                                                                    tags$div(
-                                                                                      downloadBttn("download.barplots",
-                                                                                                   "Download",
-                                                                                                   size = "xs",
-                                                                                      ),
-                                                                                      style = "padding-bottom:10px"
-                                                                                    ),
-                                                                                    plotOutput(outputId = "output.barplot", width = "50%")
+                                                                                    fluidRow(style = "padding: 15px;", 
+                                                                                             column(width = 12,
+                                                                                                    style="padding:0px",
+                                                                                                    tabBox(width = 12,
+                                                                                                           tabPanel("Simple",
+                                                                                                                    tags$div(
+                                                                                                                      downloadBttn("download.barplot.simple",
+                                                                                                                                   "Download",
+                                                                                                                                   size = "xs",
+                                                                                                                      ),
+                                                                                                                      style = "padding-bottom:10px"
+                                                                                                                    ),
+                                                                                                                    selectizeInput(inputId = "input.barplot.simple.tax",
+                                                                                                                                   label = "Choose taxonomic level",
+                                                                                                                                   choices = NULL),
+                                                                                                                    plotOutput(outputId = "output.barplot.simple", width = "50%")
+                                                                                                           ),
+                                                                                                           tabPanel("Stacked",
+                                                                                                                    tags$div(
+                                                                                                                      downloadBttn("download.barplot.stacked",
+                                                                                                                                   "Download",
+                                                                                                                                   size = "xs",
+                                                                                                                      ),
+                                                                                                                      style = "padding-bottom:10px"
+                                                                                                                    ),
+                                                                                                                    selectizeInput(inputId = "input.barplot.stacked.tax",
+                                                                                                                                   label = "Choose taxonomic level",
+                                                                                                                                   choices = NULL),
+                                                                                                                    plotOutput(outputId = "output.barplot.stacked", width = "50%")
+                                                                                                           ),
+                                                                                                           tabPanel("Horizontal",
+                                                                                                                    tags$div(
+                                                                                                                      downloadBttn("download.barplot.horizontal",
+                                                                                                                                   "Download",
+                                                                                                                                   size = "xs",
+                                                                                                                      ),
+                                                                                                                      style = "padding-bottom:10px"
+                                                                                                                    ),
+                                                                                                                    selectizeInput(inputId = "input.barplot.horizontal.tax",
+                                                                                                                                   label = "Choose taxonomic level",
+                                                                                                                                   choices = NULL),
+                                                                                                                    plotOutput(outputId = "output.barplot.horizontal", width = "50%")
+                                                                                                           ),
+                                                                                                           tabPanel("Compressed",
+                                                                                                                    tags$div(
+                                                                                                                      downloadBttn("download.barplot.compressed",
+                                                                                                                                   "Download",
+                                                                                                                                   size = "xs",
+                                                                                                                      ),
+                                                                                                                      style = "padding-bottom:10px"
+                                                                                                                    ),
+                                                                                                                    selectizeInput(inputId = "input.barplot.compressed.tax",
+                                                                                                                                   label = "Choose taxonomic level",
+                                                                                                                                   choices = NULL),
+                                                                                                                    plotOutput(outputId = "output.barplot.compressed", width = "50%")
+                                                                                                           )
+                                                                                                    )
+                                                                                             )
+                                                                                    )
+                                                                                    
                                                                            ),
                                                                            tabPanel("Density",
                                                                                     tags$div(

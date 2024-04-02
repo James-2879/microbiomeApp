@@ -126,6 +126,37 @@ server <- function(input, output, session){
     return(controls)
   })
   
+  # Barplots ----
+  updateSelectizeInput(session, "input.barplot.simple.tax", choices = taxonomy, server = TRUE)
+  
+  reactive.barplot.simple <- reactive({
+    barplot.simple <- make_barplot(all_samples, classification = input$input.barplot.simple.tax)
+    return(barplot.simple)
+  })
+  
+  updateSelectizeInput(session, "input.barplot.stacked.tax", choices = taxonomy, server = TRUE)
+  
+  reactive.barplot.stacked <- reactive({
+    barplot.stacked <- make_stacked_barplot(all_samples, classification = input$input.barplot.stacked.tax)
+    return(barplot.stacked)
+  })
+  
+  updateSelectizeInput(session, "input.barplot.horizontal.tax", choices = taxonomy, server = TRUE)
+  
+  reactive.barplot.horizontal <- reactive({
+    barplot.horizontal <- make_horizontal_stacked_barplot(all_samples, classification = input$input.barplot.horizontal.tax)
+    return(barplot.horizontal)
+  })
+  
+  updateSelectizeInput(session, "input.barplot.compressed.tax", choices = taxonomy, server = TRUE)
+  
+  reactive.barplot.compressed <- reactive({
+    barplot.compressed <- make_compressed_stacked_barplot(all_samples, classification = input$input.barplot.compressed.tax)
+    return(barplot.compressed)
+  })
+  
+  
+  
   # Density ----
   
   reactive.density <- reactive({
@@ -241,11 +272,21 @@ server <- function(input, output, session){
   output$output.example_table.text <- renderText({"Data should use the following structure, 
     although column order is irrelevant."})
   
+  output$output.barplot.simple <- renderPlot({reactive.barplot.simple()})
+  output$output.barplot.stacked <- renderPlot({reactive.barplot.stacked()})
+  output$output.barplot.horizontal <- renderPlot({reactive.barplot.horizontal()})
+  output$output.barplot.compressed <- renderPlot({reactive.barplot.compressed()})
+  
   output$output.controls <- renderPlot({reactive.controls()})
   output$output.density <- renderPlot({reactive.density()})
   output$output.treemap <- renderPlot({reactive.treemap()})
   output$output.pcoa <- renderPlot({reactive.pcoa()})
   output$output.networks <- renderPlot({reactive.networks()})
+  
+  output$download.barplot.simple <- download_manager(object = reactive.barplot.simple(), device = "ggsave")
+  output$download.barplot.stacked <- download_manager(object = reactive.barplot.stacked(), device = "ggsave")
+  output$download.barplot.horizontal <- download_manager(object = reactive.barplot.horizontal(), device = "ggsave")
+  output$download.barplot.compressed <- download_manager(object = reactive.barplot.compressed(), device = "ggsave")
   
   output$download.controls <- download_manager(object = reactive.controls(), device = "ggsave")
   output$download.density <- download_manager(object = reactive.density(), device = "ggsave")
