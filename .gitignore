@@ -1,1 +1,6 @@
 rsconnect/
+.Rproj.user
+microbiome_webapp.Rproj
+renv/
+.Rprofile
+microbiome_analysis/
