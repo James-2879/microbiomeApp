@@ -8,6 +8,7 @@ LABEL version="1.0"
 RUN apt update
 RUN apt upgrade -y
 RUN apt install iputils-ping -y
+RUN apt install cmake -y
 
 COPY . /srv/shiny-server/microbiome_webapp/
 
