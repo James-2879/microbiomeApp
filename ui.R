@@ -36,14 +36,15 @@ ui <- dashboardPage(skin = "black",
                                                 ),
                                                 sidebarMenu(id = "main_menu", 
                                                             style = "font-size:16px",
-                                                            ## About ----
-                                                            menuItem("About",
-                                                                     tabName = "about",
-                                                                     icon = icon("info-sign",
+                                                            ## Graphs ----
+                                                            menuItem("Graphs",
+                                                                     tabName = "graphs",
+                                                                     icon = icon("stats",
                                                                                  lib = "glyphicon"
                                                                      )
                                                             ),
-                                                            conditionalPanel(condition = "input.main_menu == 'about'"         
+                                                            add_busy_bar(color = "#0096FF", timeout = 400, height = "4px"),
+                                                            conditionalPanel(condition = "input.main_menu == 'graphs'",
                                                             ),
                                                             ## Data ----
                                                             menuItem("Data",
@@ -54,81 +55,25 @@ ui <- dashboardPage(skin = "black",
                                                             ),
                                                             conditionalPanel(condition = "input.main_menu == 'data'",
                                                             ),
-                                                            ## Graphs ----
-                                                            menuItem("Graphs",
-                                                                     tabName = "graphs",
-                                                                     icon = icon("stats",
+                                                            ## About ----
+                                                            menuItem("About",
+                                                                     tabName = "about",
+                                                                     icon = icon("info-sign",
                                                                                  lib = "glyphicon"
                                                                      )
                                                             ),
-                                                            add_busy_bar(color = "#0096FF", timeout = 400, height = "4px"),
-                                                            conditionalPanel(condition = "input.main_menu == 'graphs'",
+                                                            conditionalPanel(condition = "input.main_menu == 'about'"         
                                                             )
                                                 )
                     ),
                     # Body ----
                     body <- dashboardBody(style = "padding:0px;",
                                           tabItems(
-                                            ## About ----
-                                            tabItem(tabName = "about",
-                                                    fluidRow(style = "padding: 15px;", 
-                                                             column(width = 12,
-                                                                    style="padding:0px",
-                                                                    tabBox(width = 12,
-                                                                           tabPanel("User info",
-                                                                                    includeMarkdown("www/USERINFO.md")
-                                                                           ),
-                                                                           tabPanel("Dev info",
-                                                                                    includeMarkdown("README.md"
-                                                                                    )
-                                                                           )
-                                                                    )
-                                                             )
-                                                             
-                                                    )
-                                            ),
-                                            ### Data ----
-                                            tabItem(tabName = "data",
-                                                    fluidRow(style = "padding: 15px;", 
-                                                             column(width = 12,
-                                                                    style="padding:0px",
-                                                                    tabBox(width = 12,
-                                                                           tabPanel("Live data",
-                                                                                    tags$div(
-                                                                                      textOutput("output.live_data.text"),
-                                                                                      style = "padding-bottom: 10px; color: red;"
-                                                                                    ),
-                                                                                    tags$div(
-                                                                                      dataTableOutput(outputId = "output.live_data"),
-                                                                                      style = "width: 100%; overflow-x: auto;"
-                                                                                    )
-                                                                           ),
-                                                                           tabPanel("User data",
-                                                                                    tags$div(
-                                                                                      textOutput("output.example_table.text"),
-                                                                                      style = "padding-bottom: 10px; color: red;"
-                                                                                    ),
-                                                                                    actionBttn(inputId = "user.upload",
-                                                                                               label = "Upload",
-                                                                                               icon = icon("cloud-upload",
-                                                                                                           lib = "glyphicon"),
-                                                                                               size = "sm"
-                                                                                    ),
-                                                                                    tags$div(
-                                                                                      dataTableOutput(outputId = "output.example_table"),
-                                                                                      style = "width: 100%; overflow-x: auto;"
-                                                                                    )
-                                                                           ),
-                                                                    )
-                                                             )
-                                                             
-                                                    )
-                                            ),
                                             ## Graphs ----
                                             tabItem(tabName = "graphs",
                                                     fluidRow(style = "padding: 15px;", 
                                                              column(width = 12,
-                                                                    style="padding:0px",
+                                                                    style="padding:0px;",
                                                                     tabBox(width = 12,
                                                                            tabPanel("Controls",
                                                                                     tags$div(
@@ -138,7 +83,7 @@ ui <- dashboardPage(skin = "black",
                                                                                       ),
                                                                                       style = "padding-bottom:10px"
                                                                                     ),
-                                                                                    plotOutput(outputId = "output.controls", width = "50%")
+                                                                                    plotOutput(outputId = "output.controls", width = "50%", height = "55vh"),
                                                                            ),
                                                                            tabPanel("Barplots",
                                                                                     fluidRow(style = "padding: 15px;", 
@@ -333,6 +278,63 @@ ui <- dashboardPage(skin = "black",
                                                                     )
                                                              )
                                                     )
+                                                    ),
+                                                    ### Data ----
+                                                    tabItem(tabName = "data",
+                                                            fluidRow(style = "padding: 15px;", 
+                                                                     column(width = 12,
+                                                                            style="padding:0px",
+                                                                            tabBox(width = 12,
+                                                                                   tabPanel("Live data",
+                                                                                            tags$div(
+                                                                                              textOutput("output.live_data.text"),
+                                                                                              style = "padding-bottom: 10px; color: red;"
+                                                                                            ),
+                                                                                            tags$div(
+                                                                                              dataTableOutput(outputId = "output.live_data"),
+                                                                                              style = "width: 100%; overflow-x: auto;"
+                                                                                            )
+                                                                                   ),
+                                                                                   tabPanel("User data",
+                                                                                            actionBttn(inputId = "user.upload",
+                                                                                                       label = "Upload",
+                                                                                                       icon = icon("cloud-upload",
+                                                                                                                   lib = "glyphicon"),
+                                                                                                       size = "sm"
+                                                                                            ),
+                                                                                            tags$div(
+                                                                                              textOutput("output.example_table.text"),
+                                                                                              style = "padding-bottom: 10px; color: red; padding-top: 10px;"
+                                                                                            ),
+                                                                                            tags$div(
+                                                                                              dataTableOutput(outputId = "output.example_table"),
+                                                                                              style = "width: 100%; overflow-x: auto;"
+                                                                                            )
+                                                                                   ),
+                                                                            )
+                                                                     )
+                                                            )    
+                                                            
+                                                    ),
+                                                    ## About ----
+                                                    tabItem(tabName = "about",
+                                                            fluidRow(style = "padding: 15px;", 
+                                                                     column(width = 12,
+                                                                            style="padding:0px",
+                                                                            tabBox(width = 12,
+                                                                                   tabPanel("User info",
+                                                                                            includeMarkdown("www/USERINFO.md")
+                                                                                   ),
+                                                                                   tabPanel("Dev info",
+                                                                                            includeMarkdown("README.md"
+                                                                                            )
+                                                                                   )
+                                                                            )
+                                                                     )
+                                                                     
+                                                            
+                                                    
+                                                            )
                                             )
                                           )
                     ),
