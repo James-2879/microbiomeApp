@@ -47,7 +47,7 @@ source(paste0(modules_path, "tools/cross_feeding_network.R"))
 
 #---------------------------------- Metadata -----------------------------------
 
-taxonomy <- c("none",
+taxonomy2 <- c("none",
               "domain",
               "kingdom",
               "phylum",
@@ -57,4 +57,4 @@ taxonomy <- c("none",
               "genus",
               "species")
 
-taxonomy2 <- taxonomy[taxonomy != "none"] # remove none value
+taxonomy <- taxonomy2[taxonomy2 != "none"] # remove none value

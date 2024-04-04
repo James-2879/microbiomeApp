@@ -108,6 +108,12 @@ ui <- dashboardPage(skin = "black",
                                                                                       textOutput("output.example_table.text"),
                                                                                       style = "padding-bottom: 10px; color: red;"
                                                                                     ),
+                                                                                    actionBttn(inputId = "user.upload",
+                                                                                               label = "Upload",
+                                                                                               icon = icon("cloud-upload",
+                                                                                                           lib = "glyphicon"),
+                                                                                               size = "sm"
+                                                                                    ),
                                                                                     tags$div(
                                                                                       dataTableOutput(outputId = "output.example_table"),
                                                                                       style = "width: 100%; overflow-x: auto;"
@@ -311,14 +317,14 @@ ui <- dashboardPage(skin = "black",
                                                                                                                     plotOutput(outputId = "output.networks.phyloseq", width = "50%")
                                                                                                            ),
                                                                                                            tabPanel("Microeco",
-                                                                                                             tags$div(
-                                                                                                               downloadBttn("download.networks.microeco",
-                                                                                                                            "Download",
-                                                                                                                            size = "xs",
-                                                                                                               ),
-                                                                                                               style = "padding-bottom:10px"
-                                                                                                             ),
-                                                                                                             plotOutput(outputId = "output.networks.microeco", width = "50%")
+                                                                                                                    tags$div(
+                                                                                                                      downloadBttn("download.networks.microeco",
+                                                                                                                                   "Download",
+                                                                                                                                   size = "xs",
+                                                                                                                      ),
+                                                                                                                      style = "padding-bottom:10px"
+                                                                                                                    ),
+                                                                                                                    plotOutput(outputId = "output.networks.microeco", width = "50%")
                                                                                                            )
                                                                                                     )
                                                                                              )

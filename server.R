@@ -184,8 +184,8 @@ server <- function(input, output, session){
   
   # Treemap ----
   
-  updateSelectizeInput(session, "input.treemap.tax", choices = taxonomy2, server = TRUE)
-  updateSelectizeInput(session, "input.treemap.tax2", choices = taxonomy, server = TRUE)
+  updateSelectizeInput(session, "input.treemap.tax", choices = taxonomy, server = TRUE)
+  updateSelectizeInput(session, "input.treemap.tax2", choices = taxonomy2, server = TRUE)
   
   reactive.treemap <- reactive({
     if (input$input.treemap.tax != "none" & input$input.treemap.tax2 == "none") {
