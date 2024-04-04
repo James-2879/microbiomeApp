@@ -227,13 +227,21 @@ server <- function(input, output, session){
   
   updateSelectizeInput(session, "input.networks.tax", choices = taxonomy, server = TRUE)
   
-  reactive.networks <- reactive({
+  reactive.networks.phyloseq <- reactive({
     if (input$input.networks.tax != "none") {
-      network <- create_network(data = all_samples,
-                                taxonomic_level = input$input.networks.tax,
-                                max_dist = 1)
+      physeq_object <- create_physeq_object(data = all_samples)
+      network <- create_network_phyloseq(physeq_object = physeq_object,
+                                         taxonomic_level = input$input.networks.tax,
+                                         max_dist = 1)
       return(network)
     }
+  })
+  
+  reactive.networks.microeco <- reactive({
+    physeq_object <- create_physeq_object(data = all_samples)
+    network <- create_network_meco(physeq_object = physeq_object,
+                                   plot_method = "physeq")
+    return(network)
   })
   
   
@@ -302,7 +310,9 @@ server <- function(input, output, session){
   output$output.density <- renderPlot({reactive.density()})
   output$output.treemap <- renderPlot({reactive.treemap()})
   output$output.pcoa <- renderPlot({reactive.pcoa()})
-  output$output.networks <- renderPlot({reactive.networks()})
+  
+  output$output.networks.phyloseq <- renderPlot({reactive.networks.phyloseq()})
+  output$output.networks.microeco <- renderPlot({reactive.networks.microeco()})
   
   output$download.barplot.simple <- download_manager(object = reactive.barplot.simple(), device = "ggsave")
   output$download.barplot.stacked <- download_manager(object = reactive.barplot.stacked(), device = "ggsave")
@@ -317,7 +327,9 @@ server <- function(input, output, session){
   output$download.density <- download_manager(object = reactive.density(), device = "ggsave")
   output$download.treemap <- download_manager(object = reactive.treemap(), device = "ggsave")
   output$download.pcoa <- download_manager(object = reactive.pcoa(), device = "ggsave")
-  output$download.networks <- download_manager(object = reactive.networks(), device = "ggsave")
+  
+  output$download.networks.phyloseq <- download_manager(object = reactive.networks.phyloseq(), device = "ggsave")
+  output$download.networks.microeco <- download_manager(object = reactive.networks.microeco(), device = "ggsave")
   
   
   #--------------------------- gene upload garbage ----

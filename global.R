@@ -24,10 +24,10 @@ suppressPackageStartupMessages({
 #----------------------------------- Setup -------------------------------------
 
 maintainer <- "james.swift"
-application_path <- "/srv/shiny-server/microbiome_webapp/" # DEPLOYMENT
-# application_path <- "/home/james/Documents/microbiome_webapp/"
-modules_path <- "/srv/shiny-server/microbiome_webapp/microbiome_analysis/"# DEPLOYMENT
-# modules_path <- "/home/james/Documents/microbiome_analysis/"
+# application_path <- "/srv/shiny-server/microbiome_webapp/" # DEPLOYMENT
+application_path <- "/home/james/Documents/microbiome_webapp/"
+# modules_path <- "/srv/shiny-server/microbiome_webapp/microbiome_analysis/"# DEPLOYMENT
+modules_path <- "/home/james/Documents/microbiome_analysis/"
 
 
 #---------------------------------- Modules ------------------------------------
@@ -42,8 +42,8 @@ source(paste0(modules_path, "tools/heatmap.R"))
 source(paste0(modules_path, "tools/co_network.R"))
 source(paste0(modules_path, "tools/cross_feeding_network.R"))
 
-source(paste0(modules_path, "tools/data.R"))
-load_data(path = modules_path)
+# source(paste0(modules_path, "tools/data.R"))
+# load_data(path = modules_path)
 
 #---------------------------------- Metadata -----------------------------------
 

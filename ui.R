@@ -293,21 +293,39 @@ ui <- dashboardPage(skin = "black",
                                                                                     plotOutput(outputId = "output.pcoa", width = "50%")
                                                                            ),
                                                                            tabPanel("Networks",
-                                                                                    tags$div(
-                                                                                      downloadBttn("download.networks",
-                                                                                                   "Download",
-                                                                                                   size = "xs",
-                                                                                      ),
-                                                                                      style = "padding-bottom:10px"
-                                                                                    ),
-                                                                                    selectizeInput(inputId = "input.networks.tax",
-                                                                                                   label = "Choose taxonomic level",
-                                                                                                   choices = NULL),
-                                                                                    plotOutput(outputId = "output.networks", width = "50%")
+                                                                                    fluidRow(style = "padding: 15px;", 
+                                                                                             column(width = 12,
+                                                                                                    style="padding:0px",
+                                                                                                    tabBox(width = 12,
+                                                                                                           tabPanel("Phyloseq",
+                                                                                                                    tags$div(
+                                                                                                                      downloadBttn("download.networks.phyloseq",
+                                                                                                                                   "Download",
+                                                                                                                                   size = "xs",
+                                                                                                                      ),
+                                                                                                                      style = "padding-bottom:10px"
+                                                                                                                    ),
+                                                                                                                    selectizeInput(inputId = "input.networks.tax",
+                                                                                                                                   label = "Choose taxonomic level",
+                                                                                                                                   choices = NULL),
+                                                                                                                    plotOutput(outputId = "output.networks.phyloseq", width = "50%")
+                                                                                                           ),
+                                                                                                           tabPanel("Microeco",
+                                                                                                             tags$div(
+                                                                                                               downloadBttn("download.networks.microeco",
+                                                                                                                            "Download",
+                                                                                                                            size = "xs",
+                                                                                                               ),
+                                                                                                               style = "padding-bottom:10px"
+                                                                                                             ),
+                                                                                                             plotOutput(outputId = "output.networks.microeco", width = "50%")
+                                                                                                           )
+                                                                                                    )
+                                                                                             )
+                                                                                    )
                                                                            )
                                                                     )
                                                              )
-                                                             
                                                     )
                                             )
                                           )
