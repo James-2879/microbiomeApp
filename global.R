@@ -24,9 +24,6 @@ suppressPackageStartupMessages({
 #----------------------------------- Setup -------------------------------------
 
 maintainer <- "james.swift"
-# application_path <- "/srv/shiny-server/microbiome_webapp/" # DEPLOYMENT
-application_path <- "/home/james/Documents/microbiome_webapp/"
-
 
 #---------------------------------- Modules ------------------------------------
 
