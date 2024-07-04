@@ -36,6 +36,15 @@ ui <- dashboardPage(skin = "black",
                                                 ),
                                                 sidebarMenu(id = "main_menu", 
                                                             style = "font-size:16px",
+                                                            ## Data ----
+                                                            menuItem("Data",
+                                                                     tabName = "data",
+                                                                     icon = icon("list",
+                                                                                 lib = "glyphicon"
+                                                                     )
+                                                            ),
+                                                            conditionalPanel(condition = "input.main_menu == 'data'",
+                                                            ),
                                                             ## Graphs ----
                                                             menuItem("Graphs",
                                                                      tabName = "graphs",
@@ -45,15 +54,6 @@ ui <- dashboardPage(skin = "black",
                                                             ),
                                                             add_busy_bar(color = "#0096FF", timeout = 400, height = "4px"),
                                                             conditionalPanel(condition = "input.main_menu == 'graphs'",
-                                                            ),
-                                                            ## Data ----
-                                                            menuItem("Data",
-                                                                     tabName = "data",
-                                                                     icon = icon("list",
-                                                                                 lib = "glyphicon"
-                                                                     )
-                                                            ),
-                                                            conditionalPanel(condition = "input.main_menu == 'data'",
                                                             ),
                                                             ## About ----
                                                             menuItem("About",
@@ -69,6 +69,59 @@ ui <- dashboardPage(skin = "black",
                     # Body ----
                     body <- dashboardBody(style = "padding:0px;",
                                           tabItems(
+                                            ### Data ----
+                                            tabItem(tabName = "data",
+                                                    fluidRow(style = "padding: 15px;", 
+                                                             column(width = 12,
+                                                                    style="padding:0px",
+                                                                    tabBox(width = 12,
+                                                                           tabPanel("Live data",
+                                                                                    tags$div(
+                                                                                      textOutput("output.live_data.text"),
+                                                                                      style = "padding-bottom: 10px; color: red;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      dataTableOutput(outputId = "output.live_data"),
+                                                                                      style = "width: 100%; overflow-x: auto;"
+                                                                                    )
+                                                                           ),
+                                                                           tabPanel("Upload data",
+                                                                                    tags$div(
+                                                                                    actionBttn(inputId = "user.upload.single",
+                                                                                               label = "Upload file",
+                                                                                               icon = icon("cloud-upload",
+                                                                                                           lib = "glyphicon"),
+                                                                                               size = "sm"
+                                                                                    ),
+                                                                                    style = "margin-right:5px; display: inline-block;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      actionBttn(inputId = "user.upload.zip",
+                                                                                                 label = "Upload ZIP",
+                                                                                                 icon = icon("cloud-upload",
+                                                                                                             lib = "glyphicon"),
+                                                                                                 size = "sm"
+                                                                                      ),
+                                                                                      style = "display: inline-block;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      textOutput("output.upload.help"),
+                                                                                      style = "padding-bottom: 10px; color: green; padding-top: 10px;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      textOutput("output.example_table.text"),
+                                                                                      style = "padding-bottom: 10px; color: red; padding-top: 10px;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      dataTableOutput(outputId = "output.example_table"),
+                                                                                      style = "width: 100%; overflow-x: auto;"
+                                                                                    )
+                                                                           ),
+                                                                    )
+                                                             )
+                                                    )    
+                                                    
+                                            ),
                                             ## Graphs ----
                                             tabItem(tabName = "graphs",
                                                     fluidRow(style = "padding: 15px;", 
@@ -98,9 +151,6 @@ ui <- dashboardPage(skin = "black",
                                                                                                                       ),
                                                                                                                       style = "padding-bottom:10px"
                                                                                                                     ),
-                                                                                                                    selectizeInput(inputId = "input.barplot.simple.tax",
-                                                                                                                                   label = "Choose taxonomic level",
-                                                                                                                                   choices = NULL),
                                                                                                                     plotOutput(outputId = "output.barplot.simple", width = "50%")
                                                                                                            ),
                                                                                                            tabPanel("Stacked",
@@ -111,36 +161,7 @@ ui <- dashboardPage(skin = "black",
                                                                                                                       ),
                                                                                                                       style = "padding-bottom:10px"
                                                                                                                     ),
-                                                                                                                    selectizeInput(inputId = "input.barplot.stacked.tax",
-                                                                                                                                   label = "Choose taxonomic level",
-                                                                                                                                   choices = NULL),
                                                                                                                     plotOutput(outputId = "output.barplot.stacked", width = "50%")
-                                                                                                           ),
-                                                                                                           tabPanel("Horizontal",
-                                                                                                                    tags$div(
-                                                                                                                      downloadBttn("download.barplot.horizontal",
-                                                                                                                                   "Download",
-                                                                                                                                   size = "xs",
-                                                                                                                      ),
-                                                                                                                      style = "padding-bottom:10px"
-                                                                                                                    ),
-                                                                                                                    selectizeInput(inputId = "input.barplot.horizontal.tax",
-                                                                                                                                   label = "Choose taxonomic level",
-                                                                                                                                   choices = NULL),
-                                                                                                                    plotOutput(outputId = "output.barplot.horizontal", width = "50%")
-                                                                                                           ),
-                                                                                                           tabPanel("Compressed",
-                                                                                                                    tags$div(
-                                                                                                                      downloadBttn("download.barplot.compressed",
-                                                                                                                                   "Download",
-                                                                                                                                   size = "xs",
-                                                                                                                      ),
-                                                                                                                      style = "padding-bottom:10px"
-                                                                                                                    ),
-                                                                                                                    selectizeInput(inputId = "input.barplot.compressed.tax",
-                                                                                                                                   label = "Choose taxonomic level",
-                                                                                                                                   choices = NULL),
-                                                                                                                    plotOutput(outputId = "output.barplot.compressed", width = "50%")
                                                                                                            )
                                                                                                     )
                                                                                              )
@@ -164,42 +185,23 @@ ui <- dashboardPage(skin = "black",
                                                                                                     tabBox(width = 12,
                                                                                                            tabPanel("Simple",
                                                                                                                     tags$div(
-                                                                                                                      downloadBttn("download.heatmap",
+                                                                                                                      downloadBttn("download.heatmap.simple",
                                                                                                                                    "Download",
                                                                                                                                    size = "xs",
                                                                                                                       ),
                                                                                                                       style = "padding-bottom:10px"
                                                                                                                     ),
-                                                                                                                    selectizeInput(inputId = "input.heatmap.tax",
-                                                                                                                                   label = "Choose taxonomic level",
-                                                                                                                                   choices = NULL),
-                                                                                                                    plotOutput(outputId = "output.heatmap", width = "50%")
+                                                                                                                    plotOutput(outputId = "output.heatmap.simple", width = "50%")
                                                                                                            ),
-                                                                                                           tabPanel("Single var",
+                                                                                                           tabPanel("Clustered",
                                                                                                                     tags$div(
-                                                                                                                      downloadBttn("download.heatmap.univar",
+                                                                                                                      downloadBttn("download.heatmap.clustered",
                                                                                                                                    "Download",
                                                                                                                                    size = "xs",
                                                                                                                       ),
                                                                                                                       style = "padding-bottom:10px"
                                                                                                                     ),
-                                                                                                                    selectizeInput(inputId = "input.heatmap.univar.tax",
-                                                                                                                                   label = "Choose taxonomic level",
-                                                                                                                                   choices = NULL),
-                                                                                                                    plotOutput(outputId = "output.heatmap.univar", width = "50%")
-                                                                                                           ),
-                                                                                                           tabPanel("Multi var",
-                                                                                                                    tags$div(
-                                                                                                                      downloadBttn("download.heatmap.multivar",
-                                                                                                                                   "Download",
-                                                                                                                                   size = "xs",
-                                                                                                                      ),
-                                                                                                                      style = "padding-bottom:10px"
-                                                                                                                    ),
-                                                                                                                    selectizeInput(inputId = "input.heatmap.multivar.tax",
-                                                                                                                                   label = "Choose taxonomic level",
-                                                                                                                                   choices = NULL),
-                                                                                                                    plotOutput(outputId = "output.heatmap.multivar", width = "50%")
+                                                                                                                    plotOutput(outputId = "output.heatmap.clustered", width = "50%")
                                                                                                            )
                                                                                                     )
                                                                                              )
@@ -213,22 +215,7 @@ ui <- dashboardPage(skin = "black",
                                                                                       ),
                                                                                       style = "padding-bottom:10px"
                                                                                     ),
-                                                                                    selectizeInput(inputId = "input.treemap.tax",
-                                                                                                   label = "Choose taxonomic level",
-                                                                                                   choices = NULL),
-                                                                                    selectizeInput(inputId = "input.treemap.tax2",
-                                                                                                   label = "Choose second taxonomic level (optional)",
-                                                                                                   choices = NULL),
                                                                                     plotOutput(outputId = "output.treemap", width = "50%")
-                                                                           ),
-                                                                           tabPanel("Differential abundance",
-                                                                                    tags$div(
-                                                                                      downloadBttn("download.diff_abundance",
-                                                                                                   "Download",
-                                                                                                   size = "xs",
-                                                                                      ),
-                                                                                      style = "padding-bottom:10px"
-                                                                                    ),
                                                                            ),
                                                                            tabPanel("PCoA",
                                                                                     tags$div(
@@ -238,103 +225,41 @@ ui <- dashboardPage(skin = "black",
                                                                                       ),
                                                                                       style = "padding-bottom:10px"
                                                                                     ),
-                                                                                    selectizeInput(inputId = "input.pcoa.tax",
-                                                                                                   label = "Choose taxonomic level",
-                                                                                                   choices = NULL),
                                                                                     plotOutput(outputId = "output.pcoa", width = "50%")
                                                                            ),
-                                                                           tabPanel("Networks",
-                                                                                    fluidRow(style = "padding: 15px;", 
-                                                                                             column(width = 12,
-                                                                                                    style="padding:0px",
-                                                                                                    tabBox(width = 12,
-                                                                                                           tabPanel("Phyloseq",
-                                                                                                                    tags$div(
-                                                                                                                      downloadBttn("download.networks.phyloseq",
-                                                                                                                                   "Download",
-                                                                                                                                   size = "xs",
-                                                                                                                      ),
-                                                                                                                      style = "padding-bottom:10px"
-                                                                                                                    ),
-                                                                                                                    selectizeInput(inputId = "input.networks.tax",
-                                                                                                                                   label = "Choose taxonomic level",
-                                                                                                                                   choices = NULL),
-                                                                                                                    plotOutput(outputId = "output.networks.phyloseq", width = "50%")
-                                                                                                           ),
-                                                                                                           tabPanel("Microeco",
-                                                                                                                    tags$div(
-                                                                                                                      downloadBttn("download.networks.microeco",
-                                                                                                                                   "Download",
-                                                                                                                                   size = "xs",
-                                                                                                                      ),
-                                                                                                                      style = "padding-bottom:10px"
-                                                                                                                    ),
-                                                                                                                    plotOutput(outputId = "output.networks.microeco", width = "50%")
-                                                                                                           )
-                                                                                                    )
-                                                                                             )
+                                                                           tabPanel("Network",
+                                                                                    tags$div(
+                                                                                      downloadBttn("download.network",
+                                                                                                   "Download",
+                                                                                                   size = "xs",
+                                                                                      ),
+                                                                                      style = "padding-bottom:10px"
+                                                                                    ),
+                                                                                    plotOutput(outputId = "output.network", width = "50%")
+                                                                           ) 
+                                                                    )
+                                                             )
+                                                    )
+                                            ),
+                                            ## About ----
+                                            tabItem(tabName = "about",
+                                                    fluidRow(style = "padding: 15px;", 
+                                                             column(width = 12,
+                                                                    style="padding:0px",
+                                                                    tabBox(width = 12,
+                                                                           tabPanel("User info",
+                                                                                    includeMarkdown("www/USERINFO.md")
+                                                                           ),
+                                                                           tabPanel("Dev info",
+                                                                                    includeMarkdown("README.md"
                                                                                     )
                                                                            )
                                                                     )
                                                              )
+                                                             
+                                                             
+                                                             
                                                     )
-                                                    ),
-                                                    ### Data ----
-                                                    tabItem(tabName = "data",
-                                                            fluidRow(style = "padding: 15px;", 
-                                                                     column(width = 12,
-                                                                            style="padding:0px",
-                                                                            tabBox(width = 12,
-                                                                                   tabPanel("Live data",
-                                                                                            tags$div(
-                                                                                              textOutput("output.live_data.text"),
-                                                                                              style = "padding-bottom: 10px; color: red;"
-                                                                                            ),
-                                                                                            tags$div(
-                                                                                              dataTableOutput(outputId = "output.live_data"),
-                                                                                              style = "width: 100%; overflow-x: auto;"
-                                                                                            )
-                                                                                   ),
-                                                                                   tabPanel("User data",
-                                                                                            actionBttn(inputId = "user.upload",
-                                                                                                       label = "Upload",
-                                                                                                       icon = icon("cloud-upload",
-                                                                                                                   lib = "glyphicon"),
-                                                                                                       size = "sm"
-                                                                                            ),
-                                                                                            tags$div(
-                                                                                              textOutput("output.example_table.text"),
-                                                                                              style = "padding-bottom: 10px; color: red; padding-top: 10px;"
-                                                                                            ),
-                                                                                            tags$div(
-                                                                                              dataTableOutput(outputId = "output.example_table"),
-                                                                                              style = "width: 100%; overflow-x: auto;"
-                                                                                            )
-                                                                                   ),
-                                                                            )
-                                                                     )
-                                                            )    
-                                                            
-                                                    ),
-                                                    ## About ----
-                                                    tabItem(tabName = "about",
-                                                            fluidRow(style = "padding: 15px;", 
-                                                                     column(width = 12,
-                                                                            style="padding:0px",
-                                                                            tabBox(width = 12,
-                                                                                   tabPanel("User info",
-                                                                                            includeMarkdown("www/USERINFO.md")
-                                                                                   ),
-                                                                                   tabPanel("Dev info",
-                                                                                            includeMarkdown("README.md"
-                                                                                            )
-                                                                                   )
-                                                                            )
-                                                                     )
-                                                                     
-                                                            
-                                                    
-                                                            )
                                             )
                                           )
                     ),

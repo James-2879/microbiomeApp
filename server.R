@@ -10,6 +10,8 @@ server <- function(input, output, session){
   values <- reactiveValues() # initialize
   # values$var etc.
   
+  values$user_data <- NULL
+  
   #--------------------------------- Functions ---------------------------------
   
   `%ni%` <- Negate(`%in%`)
@@ -106,147 +108,225 @@ server <- function(input, output, session){
   # Data ----
   
   reactive.live_data <- reactive({
-    live_data <- datatable(all_samples)
+    req(values$user_data)
+    live_data <- datatable(values$user_data)
     return(live_data)
   })
   
   reactive.example_table <- reactive({
-    example_table <- head(all_samples, n = 5) %>% 
-      select(abundance, day, location, type, Taxa)
+    req(values$user_data)
+    example_table <- values$user_data %>% 
+      select(species, taxonomy, abundance) %>% 
+      head(., n = 5)
     example_table <- datatable(example_table, options = list(
       dom = 't'  # Hide header and footer
     ))
     return(example_table)
   })
   
-  # Controls ----
+  # Data upload ----
   
-  reactive.controls <- reactive({
-    controls <- plot_controls()
-    return(controls)
+  observeEvent(input$user.upload.single, {
+    confirmSweetAlert(
+      session = getDefaultReactiveDomain(),
+      inputId = "file_uploaded",
+      title = "Upload abundance file",
+      text = tags$div(align = "center",
+                      fluidRow(
+                        column(width = 12,
+                               fileInput(
+                                 inputId = "uploaded_user_file",
+                                 label = NULL,
+                                 multiple = FALSE,
+                                 accept = c(".tsv"),
+                                 width = NULL,
+                                 buttonLabel = "Browse...",
+                                 placeholder = "No file selected"
+                               ),
+                               tags$span("Note: only TSV files are currently accepted")
+                        ),
+                        style = "width: 100%; margin: 30px, align: center;"
+                      )
+      ),
+      type = NULL,
+      allowEscapeKey = TRUE,
+      cancelOnDismiss = TRUE,
+      closeOnClickOutside = TRUE,
+      btn_labels = c("Cancel" ,"Continue")
+    )
+  })
+  
+  observeEvent(input$user.upload.zip, {
+    confirmSweetAlert(
+      session = getDefaultReactiveDomain(),
+      inputId = "zip_uploaded",
+      title = "Upload ZIP file",
+      text = tags$div(align = "center",
+                      fluidRow(
+                        column(width = 12,
+                               fileInput(
+                                 inputId = "uploaded_user_zip",
+                                 label = NULL,
+                                 multiple = FALSE,
+                                 accept = c(".zip"),
+                                 width = NULL,
+                                 buttonLabel = "Browse...",
+                                 placeholder = "No file selected"
+                               ),
+                               tags$span("Note: only ZIP files are currently accepted")
+                        ),
+                        style = "width: 100%; margin: 30px, align: center;"
+                      )
+      ),
+      type = NULL,
+      allowEscapeKey = TRUE,
+      cancelOnDismiss = TRUE,
+      closeOnClickOutside = TRUE,
+      btn_labels = c("Cancel" ,"Continue")
+    )
+  })
+  
+  observeEvent(input$file_uploaded, {
+    loaded_data <- load_user_data(input$uploaded_user_file$datapath)
+    tryCatch(
+      expr = {
+      check_data(loaded_data)
+      values$user_data <- loaded_data
+      sendSweetAlert(
+        session = getDefaultReactiveDomain(),
+        title = "Done",
+        type = "success",
+        text = "Uploaded data is now live in-app."
+      )
+      Sys.sleep(1.75)
+      closeSweetAlert(session = getDefaultReactiveDomain())
+      }, error = function(e) {
+        sendSweetAlert(
+          session = getDefaultReactiveDomain(),
+          title = "Error",
+          type = "error",
+          text = "Data not in expected format."
+        )
+      }
+    )
+  })
+  
+  observeEvent(input$zip_uploaded, {
+    
+    zip_path <- input$uploaded_user_zip$datapath
+    
+    # Define the directory to extract to
+    extraction_dir <- file.path(tempdir(), "extracted_files")
+    
+    if (dir.exists(extraction_dir)) {
+      unlink(extraction_dir, recursive = TRUE)
+    }
+    
+    # Create the directory if it doesn't exist
+    if (!dir.exists(extraction_dir)) {
+      dir.create(extraction_dir)
+    }
+
+    unzip(zipfile = zip_path, exdir = extraction_dir)
+    
+    dirs <- list.dirs(extraction_dir, recursive = FALSE)
+    dirs <- paste0(dirs, "/")
+ 
+    loaded_data <- load_user_data_dir(dirs)
+    
+    tryCatch(
+      expr = {
+        check_data(loaded_data)
+        values$user_data <- loaded_data
+        sendSweetAlert(
+          session = getDefaultReactiveDomain(),
+          title = "Done",
+          type = "success",
+          text = "Uploaded data is now live in-app."
+        )
+        Sys.sleep(1.75)
+        closeSweetAlert(session = getDefaultReactiveDomain())
+      }, error = function(e) {
+        sendSweetAlert(
+          session = getDefaultReactiveDomain(),
+          title = "Error",
+          type = "error",
+          text = "Data not in expected format."
+        )
+      }
+    )
   })
   
   # Barplots ----
   
-  updateSelectizeInput(session, "input.barplot.simple.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.barplot.stacked.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.barplot.horizontal.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.barplot.compressed.tax", choices = taxonomy, server = TRUE)
-  
   reactive.barplot.simple <- reactive({
-    barplot.simple <- make_barplot(all_samples, classification = input$input.barplot.simple.tax)
-    return(barplot.simple)
+    req(values$user_data)
+    plot <-  make_barplot(values$user_data, max = 6, orientation = "horizontal")
+    return(plot)
   })
   
   reactive.barplot.stacked <- reactive({
-    barplot.stacked <- make_stacked_barplot(all_samples, classification = input$input.barplot.stacked.tax)
-    return(barplot.stacked)
+    req(values$user_data)
+    plot <- make_stacked_barplot(values$user_data, orientation = "vertical", max = 10)
+    return(plot)
   })
   
-  reactive.barplot.horizontal <- reactive({
-    barplot.horizontal <- make_horizontal_stacked_barplot(all_samples, classification = input$input.barplot.horizontal.tax)
-    return(barplot.horizontal)
-  })
+  # Controls ----
   
-  reactive.barplot.compressed <- reactive({
-    barplot.compressed <- make_compressed_stacked_barplot(all_samples, classification = input$input.barplot.compressed.tax)
-    return(barplot.compressed)
-  })
-  
-  # Heatmap ----
-  
-  updateSelectizeInput(session, "input.heatmap.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.heatmap.univar.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.heatmap.multivar.tax", choices = taxonomy, server = TRUE)
-  
-  reactive.heatmap <- reactive({
-    heatmap <- make_heatmap(all_samples, classification = input$input.heatmap.tax)
-    return(heatmap)
-  })
-  
-  reactive.heatmap.univar <- reactive({
-    heatmap.univar <- make_univar_heatmap(all_samples, classification = input$input.heatmap.univar.tax)
-    return(heatmap.univar)
-  })
-  
-  reactive.heatmap.multivar <- reactive({
-    heatmap.multivar <- make_multivar_heatmap(all_samples, classification = input$input.heatmap.multivar.tax)
-    return(heatmap.multivar)
+  reactive.controls <- reactive({
+    req(values$user_data)
+    plot <- plot_controls(values$user_data)
+    return(plot)
   })
   
   # Density ----
   
   reactive.density <- reactive({
-    density <- make_density_plot(data = all_samples,
-                                 limits = c(0, 0.0005))
-    return(density)
+    req(values$user_data)
+    plot <- make_density_plot(values$user_data)
+    return(plot)
   })
   
-  # Treemap ----
+  # Heat maps ----
   
-  updateSelectizeInput(session, "input.treemap.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.treemap.tax2", choices = taxonomy2, server = TRUE)
+  reactive.heatmap.simple <- reactive({
+    req(values$user_data)
+    plot <-  make_heatmap(values$user_data)
+    return(plot)
+  })
   
-  reactive.treemap <- reactive({
-    if (input$input.treemap.tax != "none" & input$input.treemap.tax2 == "none") {
-      treemap <- make_treemap(data = test_microbiome,
-                              classification = input$input.treemap.tax,
-                              max = 10)
-      return(treemap)
-    } else if (input$input.treemap.tax == input$input.treemap.tax2) {
-      sendSweetAlert(
-        session = getDefaultReactiveDomain(),
-        title = "Invalid selection",
-        text = paste0("Taxonomic levels should be different, or choose 'none'."),
-        type = "error",
-        btn_labels = "Understood",
-        closeOnClickOutside = FALSE
-      )
-    } else if (input$input.treemap.tax2 != "none") {
-      treemap <- make_dual_treemap(data = test_microbiome,
-                                   classification1 = input$input.treemap.tax,
-                                   classification2 = input$input.treemap.tax2,
-                                   max = 10)
-      return(treemap)
-    } 
+  reactive.heatmap.clustered <- reactive({
+    req(values$user_data)
+    plot <-  make_clustered_heatmap(values$user_data)
+    return(plot)
+  })
+  
+  # Network ----
+  
+  reactive.network <- reactive({
+    req(values$user_data)
+    physeq_object <- create_physeq_object(data = values$user_data)
+    plot <- create_network_phyloseq(physeq_object = physeq_object,
+                                    distance_method = "bray",
+                                    max_dist = 0.5)
+    return(plot)
   })
   
   # PCoA ----
   
-  updateSelectizeInput(session, "input.pcoa.tax", choices = taxonomy, server = TRUE)
-  
   reactive.pcoa <- reactive({
-    if (input$input.pcoa.tax != "none") {
-      pcoa <- do_pcoa(data = all_samples, 
-                      classification = input$input.pcoa.tax)
-      return(pcoa)
-    }
+    req(values$user_data)
+    plot <-   do_pcoa(values$user_data, zero_missing = TRUE)
+    return(plot)
   })
   
-  # Networks ----
+  # Tree map ----
   
-  updateSelectizeInput(session, "input.networks.tax", choices = taxonomy, server = TRUE)
-  
-  reactive.networks.phyloseq <- reactive({
-    if (input$input.networks.tax != "none") {
-      physeq_object <- create_physeq_object(data = all_samples)
-      network <- create_network_phyloseq(physeq_object = physeq_object,
-                                         taxonomic_level = input$input.networks.tax,
-                                         max_dist = 1)
-      return(network)
-    }
+  reactive.treemap <- reactive({
+    req(values$user_data)
+    plot <-   make_treemap(values$user_data, max = 10)
+    return(plot)
   })
-  
-  reactive.networks.microeco <- reactive({
-    physeq_object <- create_physeq_object(data = all_samples)
-    network <- create_network_meco(physeq_object = physeq_object,
-                                   plot_method = "physeq")
-    return(network)
-  })
-  
-  
-  
-  
   
   
   
@@ -292,79 +372,55 @@ server <- function(input, output, session){
   
   # plot styling options
   output$output.live_data <- renderDataTable({reactive.live_data()})
-  output$output.live_data.text <- renderText({"Displaying data currently used in-app."})
-  output$output.example_table <- renderDataTable({reactive.example_table()})
-  output$output.example_table.text <- renderText({"Data should use the following structure, 
-    although column order is irrelevant."})
   
+  observe({
+    if (is.null(values$user_data)) {
+      output$output.live_data.text <- renderText({"Start by adding data in the 'Upload data' tab."})
+    } else {
+      output$output.live_data.text <- renderText({"Displaying data currently used in-app."})
+    }
+  })
+  
+  output$output.example_table <- renderDataTable({reactive.example_table()})
+  output$output.example_table.text <- renderText({"Data should contain three columns (species, taxonomy, abundance), 
+    although column order is irrelevant. Any extra columns will be ignored"})
+  output$output.upload.help <- renderText({"To upload one or multiple directories, package them as ZIP files first."})
+  
+  # Plot outputs ----
   output$output.barplot.simple <- renderPlot({reactive.barplot.simple()})
   output$output.barplot.stacked <- renderPlot({reactive.barplot.stacked()})
-  output$output.barplot.horizontal <- renderPlot({reactive.barplot.horizontal()})
-  output$output.barplot.compressed <- renderPlot({reactive.barplot.compressed()})
-  
-  output$output.heatmap <- renderPlot({reactive.heatmap()})
-  output$output.heatmap.univar <- renderPlot({reactive.heatmap.univar()})
-  output$output.heatmap.multivar <- renderPlot({reactive.heatmap.multivar()})
   
   output$output.controls <- renderPlot({reactive.controls()})
+  
   output$output.density <- renderPlot({reactive.density()})
-  output$output.treemap <- renderPlot({reactive.treemap()})
+  
+  output$output.heatmap.simple <- renderPlot({reactive.heatmap.simple()})
+  output$output.heatmap.clustered <- renderPlot({reactive.heatmap.clustered()})
+  
+  output$output.network <- renderPlot({reactive.network()})
+  
   output$output.pcoa <- renderPlot({reactive.pcoa()})
   
-  output$output.networks.phyloseq <- renderPlot({reactive.networks.phyloseq()})
-  output$output.networks.microeco <- renderPlot({reactive.networks.microeco()})
+  output$output.treemap <- renderPlot({reactive.treemap()})
+  
+  
+  
+  # Downloads ----
   
   output$download.barplot.simple <- download_manager(object = reactive.barplot.simple(), device = "ggsave")
   output$download.barplot.stacked <- download_manager(object = reactive.barplot.stacked(), device = "ggsave")
-  output$download.barplot.horizontal <- download_manager(object = reactive.barplot.horizontal(), device = "ggsave")
-  output$download.barplot.compressed <- download_manager(object = reactive.barplot.compressed(), device = "ggsave")
-  
-  output$download.heatmap <- download_manager(object = reactive.heatmap(), device = "ggsave")
-  output$download.heatmap.univar <- download_manager(object = reactive.heatmap.univar(), device = "ggsave")
-  output$download.heatmap.multivar <- download_manager(object = reactive.heatmap.multivar(), device = "ggsave")
   
   output$download.controls <- download_manager(object = reactive.controls(), device = "ggsave")
+  
   output$download.density <- download_manager(object = reactive.density(), device = "ggsave")
-  output$download.treemap <- download_manager(object = reactive.treemap(), device = "ggsave")
+  
+  output$download.heatmap.simple <- download_manager(object = reactive.heatmap.simple(), device = "ggsave")
+  output$download.heatmap.clustered <- download_manager(object = reactive.heatmap.clustered(), device = "ggsave")
+  
+  output$download.network <- download_manager(object = reactive.network(), device = "ggsave")
+  
   output$download.pcoa <- download_manager(object = reactive.pcoa(), device = "ggsave")
   
-  output$download.networks.phyloseq <- download_manager(object = reactive.networks.phyloseq(), device = "ggsave")
-  output$download.networks.microeco <- download_manager(object = reactive.networks.microeco(), device = "ggsave")
-  
-  
-  #--------------------------- gene upload garbage ----
-  
-  
-  
-  #' observeEvent(input$gene_upload, {
-  #'   #' UI to upload a list of genes.
-  #'   confirmSweetAlert(
-  #'     session = getDefaultReactiveDomain(),
-  #'     inputId = "gene_list_uploaded",
-  #'     title = "Upload gene list",
-  #'     text = tags$div(align = "center",
-  #'                     fluidRow(
-  #'                       column(width = 12,
-  #'                              fileInput(
-  #'                                inputId = "upload_gene_list",
-  #'                                label = NULL,
-  #'                                multiple = FALSE,
-  #'                                accept = c(".tsv", ".csv", ".txt"),
-  #'                                width = NULL,
-  #'                                buttonLabel = "Browse...",
-  #'                                placeholder = "No file selected"
-  #'                              ),
-  #'                              tags$span("Note: any genes which are not in the correct format will be ignored.")
-  #'                       ),
-  #'                       style = "width: 100%; margin: 30px, align: center;" 
-  #'                     ),
-  #'     ),
-  #'     type = NULL,
-  #'     allowEscapeKey = TRUE,
-  #'     cancelOnDismiss = TRUE,
-  #'     closeOnClickOutside = TRUE,
-  #'     btn_labels = c("Cancel" ,"Continue")
-  #'   )
-  #' })
+  output$download.treemap <- download_manager(object = reactive.treemap(), device = "ggsave")
   
 }
