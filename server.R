@@ -106,22 +106,22 @@ server <- function(input, output, session){
   # Data ----
   
   reactive.live_data <- reactive({
-    live_data <- datatable(all_samples)
+    live_data <- datatable(user_data)
     return(live_data)
   })
   
   reactive.example_table <- reactive({
-    example_table <- head(all_samples, n = 5) %>% 
-      select(abundance, day, location, type, Taxa)
+    example_table <- user_data %>% 
+      select(species, taxonomy, abundance) %>% 
+      head(., n = 5)
     example_table <- datatable(example_table, options = list(
       dom = 't'  # Hide header and footer
     ))
     return(example_table)
   })
   
- 
   # Barplots ----
-
+  
   reactive.barplot.simple <- reactive({
     plot <-  make_barplot(user_data, max = 6, orientation = "horizontal")
     return(plot)
@@ -139,10 +139,14 @@ server <- function(input, output, session){
     return(plot)
   })
   
+  # Density ----
+  
   reactive.density <- reactive({
     plot <- make_density_plot(user_data)
     return(plot)
   })
+  
+  # Heat maps ----
   
   reactive.heatmap.simple <- reactive({
     plot <-  make_heatmap(user_data)
@@ -154,26 +158,32 @@ server <- function(input, output, session){
     return(plot)
   })
   
+  # Network ----
+  
   reactive.network <- reactive({
     physeq_object <- create_physeq_object(data = user_data)
     plot <- create_network_phyloseq(physeq_object = physeq_object,
-                                       distance_method = "bray",
-                                       max_dist = 0.5)
+                                    distance_method = "bray",
+                                    max_dist = 0.5)
     return(plot)
   })
+  
+  # PCoA ----
   
   reactive.pcoa <- reactive({
     plot <-   do_pcoa(user_data, zero_missing = TRUE)
     return(plot)
   })
   
+  # Tree map ----
+  
   reactive.treemap <- reactive({
     plot <-   make_treemap(user_data, max = 10)
     return(plot)
   })
- 
-
-
+  
+  
+  
   #---------------------------------- Messages ---------------------------------
   
   # help messages
@@ -221,33 +231,45 @@ server <- function(input, output, session){
   output$output.example_table.text <- renderText({"Data should use the following structure, 
     although column order is irrelevant."})
   
+  # Plot outputs ----
   output$output.barplot.simple <- renderPlot({reactive.barplot.simple()})
   output$output.barplot.stacked <- renderPlot({reactive.barplot.stacked()})
+  
+  output$output.controls <- renderPlot({reactive.controls()})
+  
+  output$output.density <- renderPlot({reactive.density()})
   
   output$output.heatmap.simple <- renderPlot({reactive.heatmap.simple()})
   output$output.heatmap.clustered <- renderPlot({reactive.heatmap.clustered()})
   
-  output$output.controls <- renderPlot({reactive.controls()})
-  output$output.density <- renderPlot({reactive.density()})
-  output$output.treemap <- renderPlot({reactive.treemap()})
+  output$output.network <- renderPlot({reactive.network()})
+  
   output$output.pcoa <- renderPlot({reactive.pcoa()})
   
-  output$output.network <- renderPlot({reactive.network()})
+  output$output.treemap <- renderPlot({reactive.treemap()})
+  
+  
   
   # Downloads ----
   
   output$download.barplot.simple <- download_manager(object = reactive.barplot.simple(), device = "ggsave")
   output$download.barplot.stacked <- download_manager(object = reactive.barplot.stacked(), device = "ggsave")
   
+  output$download.controls <- download_manager(object = reactive.controls(), device = "ggsave")
+  
+  output$download.density <- download_manager(object = reactive.density(), device = "ggsave")
+  
   output$download.heatmap.simple <- download_manager(object = reactive.heatmap.simple(), device = "ggsave")
   output$download.heatmap.clustered <- download_manager(object = reactive.heatmap.clustered(), device = "ggsave")
   
-  output$download.controls <- download_manager(object = reactive.controls(), device = "ggsave")
-  output$download.density <- download_manager(object = reactive.density(), device = "ggsave")
-  output$download.treemap <- download_manager(object = reactive.treemap(), device = "ggsave")
+  output$download.network <- download_manager(object = reactive.network(), device = "ggsave")
+
   output$download.pcoa <- download_manager(object = reactive.pcoa(), device = "ggsave")
   
-  output$download.networks.phyloseq <- download_manager(object = reactive.network(), device = "ggsave")
+  output$download.treemap <- download_manager(object = reactive.treemap(), device = "ggsave")
+ 
+  
+ 
   
   
   #--------------------------- gene upload garbage ----
