@@ -53,7 +53,7 @@ source(file.path(package_dir, "R", "co_network.R"))
 library("roxygen2")
 roxygen2::roxygenise(package.dir = package_dir)
 
-user_data <- load_user_data_dir(file.path(package_dir, "data", "input", "a/"))
+# user_data <- load_user_data_dir(file.path(package_dir, "data", "input", "a/"))
 
 #---------------------------------- Metadata -----------------------------------
 

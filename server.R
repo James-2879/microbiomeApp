@@ -10,6 +10,8 @@ server <- function(input, output, session){
   values <- reactiveValues() # initialize
   # values$var etc.
   
+  values$user_data <- NULL
+  
   #--------------------------------- Functions ---------------------------------
   
   `%ni%` <- Negate(`%in%`)
@@ -106,12 +108,14 @@ server <- function(input, output, session){
   # Data ----
   
   reactive.live_data <- reactive({
-    live_data <- datatable(user_data)
+    req(values$user_data)
+    live_data <- datatable(values$user_data)
     return(live_data)
   })
   
   reactive.example_table <- reactive({
-    example_table <- user_data %>% 
+    req(values$user_data)
+    example_table <- values$user_data %>% 
       select(species, taxonomy, abundance) %>% 
       head(., n = 5)
     example_table <- datatable(example_table, options = list(
@@ -120,48 +124,113 @@ server <- function(input, output, session){
     return(example_table)
   })
   
+  # Data upload ----
+  
+  observeEvent(input$user.upload.single, {
+    confirmSweetAlert(
+      session = getDefaultReactiveDomain(),
+      inputId = "file_uploaded",
+      title = "Upload abundance file",
+      text = tags$div(align = "center",
+                      fluidRow(
+                        column(width = 12,
+                               fileInput(
+                                 inputId = "uploaded_user_file",
+                                 label = NULL,
+                                 multiple = FALSE,
+                                 accept = c(".tsv"),
+                                 width = NULL,
+                                 buttonLabel = "Browse...",
+                                 placeholder = "No file selected"
+                               ),
+                               tags$span("Note: only TSV files are currently accepted")
+                        ),
+                        style = "width: 100%; margin: 30px, align: center;"
+                      )
+      ),
+      type = NULL,
+      allowEscapeKey = TRUE,
+      cancelOnDismiss = TRUE,
+      closeOnClickOutside = TRUE,
+      btn_labels = c("Cancel" ,"Continue")
+    )
+  })
+  
+  observeEvent(input$file_uploaded, {
+    print(input$uploaded_user_file)
+    loaded_data <- load_user_data(input$uploaded_user_file$datapath)
+    tryCatch(
+      expr = {
+      check_data(loaded_data)
+      values$user_data <- loaded_data
+      sendSweetAlert(
+        session = getDefaultReactiveDomain(),
+        title = "Done",
+        type = "success",
+        text = "Uploaded data is now live in-app."
+      )
+      Sys.sleep(1.75)
+      closeSweetAlert(session = getDefaultReactiveDomain())
+      }, error = function(e) {
+        sendSweetAlert(
+          session = getDefaultReactiveDomain(),
+          title = "Error",
+          type = "error",
+          text = "Data not in expected format."
+        )
+      }
+    )
+  })
+  
   # Barplots ----
   
   reactive.barplot.simple <- reactive({
-    plot <-  make_barplot(user_data, max = 6, orientation = "horizontal")
+    req(values$user_data)
+    plot <-  make_barplot(values$user_data, max = 6, orientation = "horizontal")
     return(plot)
   })
   
   reactive.barplot.stacked <- reactive({
-    plot <- make_stacked_barplot(user_data, orientation = "vertical", max = 10)
+    req(values$user_data)
+    plot <- make_stacked_barplot(values$user_data, orientation = "vertical", max = 10)
     return(plot)
   })
   
   # Controls ----
   
   reactive.controls <- reactive({
-    plot <- plot_controls(user_data)
+    req(values$user_data)
+    plot <- plot_controls(values$user_data)
     return(plot)
   })
   
   # Density ----
   
   reactive.density <- reactive({
-    plot <- make_density_plot(user_data)
+    req(values$user_data)
+    plot <- make_density_plot(values$user_data)
     return(plot)
   })
   
   # Heat maps ----
   
   reactive.heatmap.simple <- reactive({
-    plot <-  make_heatmap(user_data)
+    req(values$user_data)
+    plot <-  make_heatmap(values$user_data)
     return(plot)
   })
   
   reactive.heatmap.clustered <- reactive({
-    plot <-  make_clustered_heatmap(user_data)
+    req(values$user_data)
+    plot <-  make_clustered_heatmap(values$user_data)
     return(plot)
   })
   
   # Network ----
   
   reactive.network <- reactive({
-    physeq_object <- create_physeq_object(data = user_data)
+    req(values$user_data)
+    physeq_object <- create_physeq_object(data = values$user_data)
     plot <- create_network_phyloseq(physeq_object = physeq_object,
                                     distance_method = "bray",
                                     max_dist = 0.5)
@@ -171,14 +240,16 @@ server <- function(input, output, session){
   # PCoA ----
   
   reactive.pcoa <- reactive({
-    plot <-   do_pcoa(user_data, zero_missing = TRUE)
+    req(values$user_data)
+    plot <-   do_pcoa(values$user_data, zero_missing = TRUE)
     return(plot)
   })
   
   # Tree map ----
   
   reactive.treemap <- reactive({
-    plot <-   make_treemap(user_data, max = 10)
+    req(values$user_data)
+    plot <-   make_treemap(values$user_data, max = 10)
     return(plot)
   })
   
@@ -263,13 +334,13 @@ server <- function(input, output, session){
   output$download.heatmap.clustered <- download_manager(object = reactive.heatmap.clustered(), device = "ggsave")
   
   output$download.network <- download_manager(object = reactive.network(), device = "ggsave")
-
+  
   output$download.pcoa <- download_manager(object = reactive.pcoa(), device = "ggsave")
   
   output$download.treemap <- download_manager(object = reactive.treemap(), device = "ggsave")
- 
   
- 
+  
+  
   
   
   #--------------------------- gene upload garbage ----

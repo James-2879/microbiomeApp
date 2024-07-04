@@ -205,8 +205,14 @@ ui <- dashboardPage(skin = "black",
                                                                                     )
                                                                            ),
                                                                            tabPanel("User data",
-                                                                                    actionBttn(inputId = "user.upload",
-                                                                                               label = "Upload",
+                                                                                    actionBttn(inputId = "user.upload.single",
+                                                                                               label = "Upload file",
+                                                                                               icon = icon("cloud-upload",
+                                                                                                           lib = "glyphicon"),
+                                                                                               size = "sm"
+                                                                                    ),
+                                                                                    actionBttn(inputId = "user.upload.dir",
+                                                                                               label = "Upload directory",
                                                                                                icon = icon("cloud-upload",
                                                                                                            lib = "glyphicon"),
                                                                                                size = "sm"
