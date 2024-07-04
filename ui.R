@@ -211,11 +211,15 @@ ui <- dashboardPage(skin = "black",
                                                                                                            lib = "glyphicon"),
                                                                                                size = "sm"
                                                                                     ),
-                                                                                    actionBttn(inputId = "user.upload.dir",
-                                                                                               label = "Upload directory",
+                                                                                    actionBttn(inputId = "user.upload.zip",
+                                                                                               label = "Upload ZIP",
                                                                                                icon = icon("cloud-upload",
                                                                                                            lib = "glyphicon"),
                                                                                                size = "sm"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      textOutput("output.upload.help"),
+                                                                                      style = "padding-bottom: 10px; color: green; padding-top: 10px;"
                                                                                     ),
                                                                                     tags$div(
                                                                                       textOutput("output.example_table.text"),

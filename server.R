@@ -156,8 +156,37 @@ server <- function(input, output, session){
     )
   })
   
+  observeEvent(input$user.upload.zip, {
+    confirmSweetAlert(
+      session = getDefaultReactiveDomain(),
+      inputId = "zip_uploaded",
+      title = "Upload ZIP file",
+      text = tags$div(align = "center",
+                      fluidRow(
+                        column(width = 12,
+                               fileInput(
+                                 inputId = "uploaded_user_zip",
+                                 label = NULL,
+                                 multiple = FALSE,
+                                 accept = c(".zip"),
+                                 width = NULL,
+                                 buttonLabel = "Browse...",
+                                 placeholder = "No file selected"
+                               ),
+                               tags$span("Note: only ZIP files are currently accepted")
+                        ),
+                        style = "width: 100%; margin: 30px, align: center;"
+                      )
+      ),
+      type = NULL,
+      allowEscapeKey = TRUE,
+      cancelOnDismiss = TRUE,
+      closeOnClickOutside = TRUE,
+      btn_labels = c("Cancel" ,"Continue")
+    )
+  })
+  
   observeEvent(input$file_uploaded, {
-    print(input$uploaded_user_file)
     loaded_data <- load_user_data(input$uploaded_user_file$datapath)
     tryCatch(
       expr = {
@@ -171,6 +200,52 @@ server <- function(input, output, session){
       )
       Sys.sleep(1.75)
       closeSweetAlert(session = getDefaultReactiveDomain())
+      }, error = function(e) {
+        sendSweetAlert(
+          session = getDefaultReactiveDomain(),
+          title = "Error",
+          type = "error",
+          text = "Data not in expected format."
+        )
+      }
+    )
+  })
+  
+  observeEvent(input$zip_uploaded, {
+    
+    zip_path <- input$uploaded_user_zip$datapath
+    
+    # Define the directory to extract to
+    extraction_dir <- file.path(tempdir(), "extracted_files")
+    
+    if (dir.exists(extraction_dir)) {
+      unlink(extraction_dir, recursive = TRUE)
+    }
+    
+    # Create the directory if it doesn't exist
+    if (!dir.exists(extraction_dir)) {
+      dir.create(extraction_dir)
+    }
+
+    unzip(zipfile = zip_path, exdir = extraction_dir)
+    
+    dirs <- list.dirs(extraction_dir, recursive = FALSE)
+    dirs <- paste0(dirs, "/")
+ 
+    loaded_data <- load_user_data_dir(dirs)
+    
+    tryCatch(
+      expr = {
+        check_data(loaded_data)
+        values$user_data <- loaded_data
+        sendSweetAlert(
+          session = getDefaultReactiveDomain(),
+          title = "Done",
+          type = "success",
+          text = "Uploaded data is now live in-app."
+        )
+        Sys.sleep(1.75)
+        closeSweetAlert(session = getDefaultReactiveDomain())
       }, error = function(e) {
         sendSweetAlert(
           session = getDefaultReactiveDomain(),
@@ -301,6 +376,7 @@ server <- function(input, output, session){
   output$output.example_table <- renderDataTable({reactive.example_table()})
   output$output.example_table.text <- renderText({"Data should use the following structure, 
     although column order is irrelevant."})
+  output$output.upload.help <- renderText({"To upload one or multiple directories, package them as ZIP files first."})
   
   # Plot outputs ----
   output$output.barplot.simple <- renderPlot({reactive.barplot.simple()})
