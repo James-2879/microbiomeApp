@@ -119,137 +119,61 @@ server <- function(input, output, session){
     return(example_table)
   })
   
-  # Controls ----
-  
-  reactive.controls <- reactive({
-    controls <- plot_controls()
-    return(controls)
-  })
-  
+ 
   # Barplots ----
-  
-  updateSelectizeInput(session, "input.barplot.simple.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.barplot.stacked.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.barplot.horizontal.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.barplot.compressed.tax", choices = taxonomy, server = TRUE)
-  
+
   reactive.barplot.simple <- reactive({
-    barplot.simple <- make_barplot(all_samples, classification = input$input.barplot.simple.tax)
-    return(barplot.simple)
+    plot <-  make_barplot(user_data, max = 6, orientation = "horizontal")
+    return(plot)
   })
   
   reactive.barplot.stacked <- reactive({
-    barplot.stacked <- make_stacked_barplot(all_samples, classification = input$input.barplot.stacked.tax)
-    return(barplot.stacked)
+    plot <- make_stacked_barplot(user_data, orientation = "vertical", max = 10)
+    return(plot)
   })
   
-  reactive.barplot.horizontal <- reactive({
-    barplot.horizontal <- make_horizontal_stacked_barplot(all_samples, classification = input$input.barplot.horizontal.tax)
-    return(barplot.horizontal)
+  # Controls ----
+  
+  reactive.controls <- reactive({
+    plot <- plot_controls(user_data)
+    return(plot)
   })
-  
-  reactive.barplot.compressed <- reactive({
-    barplot.compressed <- make_compressed_stacked_barplot(all_samples, classification = input$input.barplot.compressed.tax)
-    return(barplot.compressed)
-  })
-  
-  # Heatmap ----
-  
-  updateSelectizeInput(session, "input.heatmap.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.heatmap.univar.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.heatmap.multivar.tax", choices = taxonomy, server = TRUE)
-  
-  reactive.heatmap <- reactive({
-    heatmap <- make_heatmap(all_samples, classification = input$input.heatmap.tax)
-    return(heatmap)
-  })
-  
-  reactive.heatmap.univar <- reactive({
-    heatmap.univar <- make_univar_heatmap(all_samples, classification = input$input.heatmap.univar.tax)
-    return(heatmap.univar)
-  })
-  
-  reactive.heatmap.multivar <- reactive({
-    heatmap.multivar <- make_multivar_heatmap(all_samples, classification = input$input.heatmap.multivar.tax)
-    return(heatmap.multivar)
-  })
-  
-  # Density ----
   
   reactive.density <- reactive({
-    density <- make_density_plot(data = all_samples,
-                                 limits = c(0, 0.0005))
-    return(density)
+    plot <- make_density_plot(user_data)
+    return(plot)
   })
   
-  # Treemap ----
-  
-  updateSelectizeInput(session, "input.treemap.tax", choices = taxonomy, server = TRUE)
-  updateSelectizeInput(session, "input.treemap.tax2", choices = taxonomy2, server = TRUE)
-  
-  reactive.treemap <- reactive({
-    if (input$input.treemap.tax != "none" & input$input.treemap.tax2 == "none") {
-      treemap <- make_treemap(data = test_microbiome,
-                              classification = input$input.treemap.tax,
-                              max = 10)
-      return(treemap)
-    } else if (input$input.treemap.tax == input$input.treemap.tax2) {
-      sendSweetAlert(
-        session = getDefaultReactiveDomain(),
-        title = "Invalid selection",
-        text = paste0("Taxonomic levels should be different, or choose 'none'."),
-        type = "error",
-        btn_labels = "Understood",
-        closeOnClickOutside = FALSE
-      )
-    } else if (input$input.treemap.tax2 != "none") {
-      treemap <- make_dual_treemap(data = test_microbiome,
-                                   classification1 = input$input.treemap.tax,
-                                   classification2 = input$input.treemap.tax2,
-                                   max = 10)
-      return(treemap)
-    } 
+  reactive.heatmap.simple <- reactive({
+    plot <-  make_heatmap(user_data)
+    return(plot)
   })
   
-  # PCoA ----
+  reactive.heatmap.clustered <- reactive({
+    plot <-  make_clustered_heatmap(user_data)
+    return(plot)
+  })
   
-  updateSelectizeInput(session, "input.pcoa.tax", choices = taxonomy, server = TRUE)
+  reactive.network <- reactive({
+    physeq_object <- create_physeq_object(data = user_data)
+    plot <- create_network_phyloseq(physeq_object = physeq_object,
+                                       distance_method = "bray",
+                                       max_dist = 0.5)
+    return(plot)
+  })
   
   reactive.pcoa <- reactive({
-    if (input$input.pcoa.tax != "none") {
-      pcoa <- do_pcoa(data = all_samples, 
-                      classification = input$input.pcoa.tax)
-      return(pcoa)
-    }
+    plot <-   do_pcoa(user_data, zero_missing = TRUE)
+    return(plot)
   })
   
-  # Networks ----
-  
-  updateSelectizeInput(session, "input.networks.tax", choices = taxonomy, server = TRUE)
-  
-  reactive.networks.phyloseq <- reactive({
-    if (input$input.networks.tax != "none") {
-      physeq_object <- create_physeq_object(data = all_samples)
-      network <- create_network_phyloseq(physeq_object = physeq_object,
-                                         taxonomic_level = input$input.networks.tax,
-                                         max_dist = 1)
-      return(network)
-    }
+  reactive.treemap <- reactive({
+    plot <-   make_treemap(user_data, max = 10)
+    return(plot)
   })
-  
-  reactive.networks.microeco <- reactive({
-    physeq_object <- create_physeq_object(data = all_samples)
-    network <- create_network_meco(physeq_object = physeq_object,
-                                   plot_method = "physeq")
-    return(network)
-  })
-  
-  
-  
-  
-  
-  
-  
+ 
+
+
   #---------------------------------- Messages ---------------------------------
   
   # help messages
@@ -299,37 +223,31 @@ server <- function(input, output, session){
   
   output$output.barplot.simple <- renderPlot({reactive.barplot.simple()})
   output$output.barplot.stacked <- renderPlot({reactive.barplot.stacked()})
-  output$output.barplot.horizontal <- renderPlot({reactive.barplot.horizontal()})
-  output$output.barplot.compressed <- renderPlot({reactive.barplot.compressed()})
   
-  output$output.heatmap <- renderPlot({reactive.heatmap()})
-  output$output.heatmap.univar <- renderPlot({reactive.heatmap.univar()})
-  output$output.heatmap.multivar <- renderPlot({reactive.heatmap.multivar()})
+  output$output.heatmap.simple <- renderPlot({reactive.heatmap.simple()})
+  output$output.heatmap.clustered <- renderPlot({reactive.heatmap.clustered()})
   
   output$output.controls <- renderPlot({reactive.controls()})
   output$output.density <- renderPlot({reactive.density()})
   output$output.treemap <- renderPlot({reactive.treemap()})
   output$output.pcoa <- renderPlot({reactive.pcoa()})
   
-  output$output.networks.phyloseq <- renderPlot({reactive.networks.phyloseq()})
-  output$output.networks.microeco <- renderPlot({reactive.networks.microeco()})
+  output$output.network <- renderPlot({reactive.network()})
+  
+  # Downloads ----
   
   output$download.barplot.simple <- download_manager(object = reactive.barplot.simple(), device = "ggsave")
   output$download.barplot.stacked <- download_manager(object = reactive.barplot.stacked(), device = "ggsave")
-  output$download.barplot.horizontal <- download_manager(object = reactive.barplot.horizontal(), device = "ggsave")
-  output$download.barplot.compressed <- download_manager(object = reactive.barplot.compressed(), device = "ggsave")
   
-  output$download.heatmap <- download_manager(object = reactive.heatmap(), device = "ggsave")
-  output$download.heatmap.univar <- download_manager(object = reactive.heatmap.univar(), device = "ggsave")
-  output$download.heatmap.multivar <- download_manager(object = reactive.heatmap.multivar(), device = "ggsave")
+  output$download.heatmap.simple <- download_manager(object = reactive.heatmap.simple(), device = "ggsave")
+  output$download.heatmap.clustered <- download_manager(object = reactive.heatmap.clustered(), device = "ggsave")
   
   output$download.controls <- download_manager(object = reactive.controls(), device = "ggsave")
   output$download.density <- download_manager(object = reactive.density(), device = "ggsave")
   output$download.treemap <- download_manager(object = reactive.treemap(), device = "ggsave")
   output$download.pcoa <- download_manager(object = reactive.pcoa(), device = "ggsave")
   
-  output$download.networks.phyloseq <- download_manager(object = reactive.networks.phyloseq(), device = "ggsave")
-  output$download.networks.microeco <- download_manager(object = reactive.networks.microeco(), device = "ggsave")
+  output$download.networks.phyloseq <- download_manager(object = reactive.network(), device = "ggsave")
   
   
   #--------------------------- gene upload garbage ----
