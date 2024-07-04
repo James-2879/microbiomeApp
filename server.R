@@ -372,10 +372,18 @@ server <- function(input, output, session){
   
   # plot styling options
   output$output.live_data <- renderDataTable({reactive.live_data()})
-  output$output.live_data.text <- renderText({"Displaying data currently used in-app."})
+  
+  observe({
+    if (is.null(values$user_data)) {
+      output$output.live_data.text <- renderText({"Start by adding data in the 'Upload data' tab."})
+    } else {
+      output$output.live_data.text <- renderText({"Displaying data currently used in-app."})
+    }
+  })
+  
   output$output.example_table <- renderDataTable({reactive.example_table()})
-  output$output.example_table.text <- renderText({"Data should use the following structure, 
-    although column order is irrelevant."})
+  output$output.example_table.text <- renderText({"Data should contain three columns (species, taxonomy, abundance), 
+    although column order is irrelevant. Any extra columns will be ignored"})
   output$output.upload.help <- renderText({"To upload one or multiple directories, package them as ZIP files first."})
   
   # Plot outputs ----
@@ -414,44 +422,5 @@ server <- function(input, output, session){
   output$download.pcoa <- download_manager(object = reactive.pcoa(), device = "ggsave")
   
   output$download.treemap <- download_manager(object = reactive.treemap(), device = "ggsave")
-  
-  
-  
-  
-  
-  #--------------------------- gene upload garbage ----
-  
-  
-  
-  #' observeEvent(input$gene_upload, {
-  #'   #' UI to upload a list of genes.
-  #'   confirmSweetAlert(
-  #'     session = getDefaultReactiveDomain(),
-  #'     inputId = "gene_list_uploaded",
-  #'     title = "Upload gene list",
-  #'     text = tags$div(align = "center",
-  #'                     fluidRow(
-  #'                       column(width = 12,
-  #'                              fileInput(
-  #'                                inputId = "upload_gene_list",
-  #'                                label = NULL,
-  #'                                multiple = FALSE,
-  #'                                accept = c(".tsv", ".csv", ".txt"),
-  #'                                width = NULL,
-  #'                                buttonLabel = "Browse...",
-  #'                                placeholder = "No file selected"
-  #'                              ),
-  #'                              tags$span("Note: any genes which are not in the correct format will be ignored.")
-  #'                       ),
-  #'                       style = "width: 100%; margin: 30px, align: center;" 
-  #'                     ),
-  #'     ),
-  #'     type = NULL,
-  #'     allowEscapeKey = TRUE,
-  #'     cancelOnDismiss = TRUE,
-  #'     closeOnClickOutside = TRUE,
-  #'     btn_labels = c("Cancel" ,"Continue")
-  #'   )
-  #' })
   
 }

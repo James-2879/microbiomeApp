@@ -36,6 +36,15 @@ ui <- dashboardPage(skin = "black",
                                                 ),
                                                 sidebarMenu(id = "main_menu", 
                                                             style = "font-size:16px",
+                                                            ## Data ----
+                                                            menuItem("Data",
+                                                                     tabName = "data",
+                                                                     icon = icon("list",
+                                                                                 lib = "glyphicon"
+                                                                     )
+                                                            ),
+                                                            conditionalPanel(condition = "input.main_menu == 'data'",
+                                                            ),
                                                             ## Graphs ----
                                                             menuItem("Graphs",
                                                                      tabName = "graphs",
@@ -45,15 +54,6 @@ ui <- dashboardPage(skin = "black",
                                                             ),
                                                             add_busy_bar(color = "#0096FF", timeout = 400, height = "4px"),
                                                             conditionalPanel(condition = "input.main_menu == 'graphs'",
-                                                            ),
-                                                            ## Data ----
-                                                            menuItem("Data",
-                                                                     tabName = "data",
-                                                                     icon = icon("list",
-                                                                                 lib = "glyphicon"
-                                                                     )
-                                                            ),
-                                                            conditionalPanel(condition = "input.main_menu == 'data'",
                                                             ),
                                                             ## About ----
                                                             menuItem("About",
@@ -69,6 +69,59 @@ ui <- dashboardPage(skin = "black",
                     # Body ----
                     body <- dashboardBody(style = "padding:0px;",
                                           tabItems(
+                                            ### Data ----
+                                            tabItem(tabName = "data",
+                                                    fluidRow(style = "padding: 15px;", 
+                                                             column(width = 12,
+                                                                    style="padding:0px",
+                                                                    tabBox(width = 12,
+                                                                           tabPanel("Live data",
+                                                                                    tags$div(
+                                                                                      textOutput("output.live_data.text"),
+                                                                                      style = "padding-bottom: 10px; color: red;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      dataTableOutput(outputId = "output.live_data"),
+                                                                                      style = "width: 100%; overflow-x: auto;"
+                                                                                    )
+                                                                           ),
+                                                                           tabPanel("Upload data",
+                                                                                    tags$div(
+                                                                                    actionBttn(inputId = "user.upload.single",
+                                                                                               label = "Upload file",
+                                                                                               icon = icon("cloud-upload",
+                                                                                                           lib = "glyphicon"),
+                                                                                               size = "sm"
+                                                                                    ),
+                                                                                    style = "margin-right:5px; display: inline-block;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      actionBttn(inputId = "user.upload.zip",
+                                                                                                 label = "Upload ZIP",
+                                                                                                 icon = icon("cloud-upload",
+                                                                                                             lib = "glyphicon"),
+                                                                                                 size = "sm"
+                                                                                      ),
+                                                                                      style = "display: inline-block;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      textOutput("output.upload.help"),
+                                                                                      style = "padding-bottom: 10px; color: green; padding-top: 10px;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      textOutput("output.example_table.text"),
+                                                                                      style = "padding-bottom: 10px; color: red; padding-top: 10px;"
+                                                                                    ),
+                                                                                    tags$div(
+                                                                                      dataTableOutput(outputId = "output.example_table"),
+                                                                                      style = "width: 100%; overflow-x: auto;"
+                                                                                    )
+                                                                           ),
+                                                                    )
+                                                             )
+                                                    )    
+                                                    
+                                            ),
                                             ## Graphs ----
                                             tabItem(tabName = "graphs",
                                                     fluidRow(style = "padding: 15px;", 
@@ -187,53 +240,6 @@ ui <- dashboardPage(skin = "black",
                                                                     )
                                                              )
                                                     )
-                                            ),
-                                            ### Data ----
-                                            tabItem(tabName = "data",
-                                                    fluidRow(style = "padding: 15px;", 
-                                                             column(width = 12,
-                                                                    style="padding:0px",
-                                                                    tabBox(width = 12,
-                                                                           tabPanel("Live data",
-                                                                                    tags$div(
-                                                                                      textOutput("output.live_data.text"),
-                                                                                      style = "padding-bottom: 10px; color: red;"
-                                                                                    ),
-                                                                                    tags$div(
-                                                                                      dataTableOutput(outputId = "output.live_data"),
-                                                                                      style = "width: 100%; overflow-x: auto;"
-                                                                                    )
-                                                                           ),
-                                                                           tabPanel("User data",
-                                                                                    actionBttn(inputId = "user.upload.single",
-                                                                                               label = "Upload file",
-                                                                                               icon = icon("cloud-upload",
-                                                                                                           lib = "glyphicon"),
-                                                                                               size = "sm"
-                                                                                    ),
-                                                                                    actionBttn(inputId = "user.upload.zip",
-                                                                                               label = "Upload ZIP",
-                                                                                               icon = icon("cloud-upload",
-                                                                                                           lib = "glyphicon"),
-                                                                                               size = "sm"
-                                                                                    ),
-                                                                                    tags$div(
-                                                                                      textOutput("output.upload.help"),
-                                                                                      style = "padding-bottom: 10px; color: green; padding-top: 10px;"
-                                                                                    ),
-                                                                                    tags$div(
-                                                                                      textOutput("output.example_table.text"),
-                                                                                      style = "padding-bottom: 10px; color: red; padding-top: 10px;"
-                                                                                    ),
-                                                                                    tags$div(
-                                                                                      dataTableOutput(outputId = "output.example_table"),
-                                                                                      style = "width: 100%; overflow-x: auto;"
-                                                                                    )
-                                                                           ),
-                                                                    )
-                                                             )
-                                                    )    
-                                                    
                                             ),
                                             ## About ----
                                             tabItem(tabName = "about",
